@@ -12,6 +12,11 @@ using namespace std;
 KVStore db;
 unsigned long global_key_counter;
 
+string get(unsigned long key){
+	string value(db[key].data.begin(),db[key].data.end());
+	return value;
+}
+
 // Función que retorna 1 si la clave ya existe y 0 si no.
 int is_an_existing_key(unsigned long new_key, KVStore db){
 	for(map<unsigned long, Value>::iterator it = db.begin(); it != db.end(); ++it) {
@@ -91,8 +96,12 @@ int main(int argc, char** argv) {
 	// Imprimir lo que hemos agregado al mapa KV.
 	cout << db[1000].size << " " << (int) db[1000].data[0] << endl;
 	// esto de abajo es un ejemplo de recuperación del string que está en el arreglo de bytes
-	string str_saved(db[1000].data.begin(),db[1000].data.end());
+	string str_saved = get(1000);
 	cout<< (str_saved.data()) << " size:"<< str_saved.size() << endl;
+	string str_saved1 = get(1001);
+	cout<< (str_saved1.data()) << " size:"<< str_saved1.size() << endl;
+	string str_saved2 = get(1);
+	cout<< (str_saved2.data()) << " size:"<< str_saved2.size() << endl;
 
 	return 0;
 }
