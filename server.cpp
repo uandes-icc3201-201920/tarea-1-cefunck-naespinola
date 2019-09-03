@@ -11,10 +11,10 @@ using namespace std;
 KVStore db;
 
 // Función insert por ahora sin validación de las claves
-int insert(unsigned long key, string data){
+int insert_into_db(unsigned long key, string data){
 	vector<byte> vdata(data.begin(),data.end());
 	Value value = { data.size(), vdata};
-	db.insert(std::pair<unsigned long, Value>(key, value));
+	db.insert(pair<unsigned long, Value>(key, value));
 	return 0;
 }
 
@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
 	// adecuada para acceder a la estructura.
 	//db.insert(std::pair<unsigned long, Value>(1000, valstr));
 
-	insert(1000,data);
+	insert_into_db(1000,data);
 
 	// Imprimir lo que hemos agregado al mapa KV.
 	cout << db[1000].size << " " << (int) db[1000].data[0] << endl;
