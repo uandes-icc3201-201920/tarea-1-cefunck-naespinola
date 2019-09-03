@@ -51,8 +51,12 @@ int insert_into_db(unsigned long key, string data){
 // Función que inserta un dato en la base de datos con clave autogenerada, si
 // la operación tiene exito retorna la clave generada.
 int insert_into_db(string data){
-	unsigned long new_key = global_key_counter++;
-	return insert_into_db(new_key, data);
+	unsigned long new_key = global_key_counter;
+	int result = insert_into_db(new_key, data);
+	if (result == new_key){
+		global_key_counter++;
+	}
+	return result;
 }
 
 
@@ -79,6 +83,11 @@ int main(int argc, char** argv) {
 	cout << insert_into_db(1000,data) << endl;
 	cout << insert_into_db(1001,data) << endl;
 	cout << insert_into_db(1001,data) << endl;
+	cout << insert_into_db(data) << endl;
+	cout << insert_into_db(1002,data) << endl;
+	cout << insert_into_db(data) << endl;
+	cout << insert_into_db(data) << endl;
+
 	// Imprimir lo que hemos agregado al mapa KV.
 	cout << db[1000].size << " " << (int) db[1000].data[0] << endl;
 	// esto de abajo es un ejemplo de recuperación del string que está en el arreglo de bytes
