@@ -51,6 +51,14 @@ bool peek(unsigned long key){
 }
 
 
+int delete_from_db(unsigned long key){
+	if (!peek(key))
+		return key;
+	db.erase(key);
+	return 0;
+}
+
+
 bool update_into_db(unsigned long key, Value value){
 	if(!peek(key))
 		return false;
@@ -60,7 +68,9 @@ bool update_into_db(unsigned long key, Value value){
 
 
 Value get(unsigned long key){
-	return db[key];
+	if(peek(key))
+		return db[key];
+	throw invalid_argument( "the key entered does not exist in database" );
 }
 
 
@@ -124,17 +134,25 @@ int main(int argc, char** argv) {
 	Value value2 = string_to_value("segundo dato");
 	Value value3 = string_to_value("tercer dato");
 	insert_into_db(1000,value1);
+	insert_into_db(1001,value2);
+	insert_into_db(1001,value2);
 	insert_into_db(value2);
 	insert_into_db(value3);
-	update_into_db(1000,string_to_value("dato actualizado"));
+	update_into_db(1001,string_to_value("dato actualizado"));
 
-	Value value_saved = get(1000);
-	string str_from_value_saved = value_to_string(value_saved);
+	cout << db.size() << endl;
+	if (delete_from_db(1000) == 0)
+		cout << "deleted" << endl;
+	else
+		cout << "cant delete" << endl;
+	cout << db.size() << endl;
 
-	vector<unsigned long> v = list();
-	for(vector<unsigned long>::iterator it = v.begin(); it != v.end(); ++it) {
+
+	vector<unsigned long> keys = list();
+	for(vector<unsigned long>::iterator it = keys.begin(); it != keys.end(); ++it) {
 		unsigned long key = *it;
-		string str_value = value_to_string(get(key));
+		Value value = get(key);
+		string str_value = value_to_string(value);
 		cout << "clave:" << *it << " valor:" << str_value << endl;
 	}
 
