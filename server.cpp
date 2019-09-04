@@ -12,6 +12,16 @@ using namespace std;
 KVStore db;
 unsigned long global_key_counter;
 
+
+vector<unsigned long> list(){
+	vector<unsigned long> keys;
+	for(map<unsigned long, Value>::iterator it = db.begin(); it != db.end(); ++it) {
+		keys.push_back(it->first);
+	}
+	return keys;
+}
+
+
 Value get(unsigned long key){
 	Value value = {db[key].size, db[key].data};
 	return value;
@@ -84,11 +94,24 @@ int main(int argc, char** argv) {
     }
 
 	init_db();
-	string data = "abcde";
-	cout << insert_into_db(1000,data) << endl;
+
+	string data1 = "primer dato";
+	string data2 = "segundo dato";
+	string data3 = "tercer dato";
+	insert_into_db(1000,data1);
+	insert_into_db(data2);
+	insert_into_db(data3);
+
 	Value value_saved = get(1000);
 	string str_from_value_saved(value_saved.data.begin(), value_saved.data.end());
-	cout << str_from_value_saved << endl;
+
+	vector<unsigned long> v = list();
+	for(vector<unsigned long>::iterator it = v.begin(); it != v.end(); ++it) {
+		unsigned long key = *it;
+		Value value = get(key);
+		string str_value(value.data.begin(), value.data.end());
+		cout << "clave:" << *it << " valor:" << str_value << endl;
+	}
 
 	return 0;
 }
