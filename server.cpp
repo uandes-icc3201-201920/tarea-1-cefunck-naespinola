@@ -12,8 +12,8 @@ using namespace std;
 KVStore db;
 unsigned long global_key_counter;
 
-string get(unsigned long key){
-	string value(db[key].data.begin(),db[key].data.end());
+Value get(unsigned long key){
+	Value value = {db[key].size, db[key].data};
 	return value;
 }
 
@@ -86,22 +86,9 @@ int main(int argc, char** argv) {
 	init_db();
 	string data = "abcde";
 	cout << insert_into_db(1000,data) << endl;
-	cout << insert_into_db(1001,data) << endl;
-	cout << insert_into_db(1001,data) << endl;
-	cout << insert_into_db(data) << endl;
-	cout << insert_into_db(1002,data) << endl;
-	cout << insert_into_db(data) << endl;
-	cout << insert_into_db(data) << endl;
-
-	// Imprimir lo que hemos agregado al mapa KV.
-	cout << db[1000].size << " " << (int) db[1000].data[0] << endl;
-	// esto de abajo es un ejemplo de recuperación del string que está en el arreglo de bytes
-	string str_saved = get(1000);
-	cout<< (str_saved.data()) << " size:"<< str_saved.size() << endl;
-	string str_saved1 = get(1001);
-	cout<< (str_saved1.data()) << " size:"<< str_saved1.size() << endl;
-	string str_saved2 = get(1);
-	cout<< (str_saved2.data()) << " size:"<< str_saved2.size() << endl;
+	Value value_saved = get(1000);
+	string str_from_value_saved(value_saved.data.begin(), value_saved.data.end());
+	cout << str_from_value_saved << endl;
 
 	return 0;
 }
