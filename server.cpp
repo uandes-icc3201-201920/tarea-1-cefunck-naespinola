@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <ctime>
+#include <math.h>
 #include "util.h"
 
 using namespace std;
@@ -11,6 +12,13 @@ using namespace std;
 // Almacenamiento KV
 KVStore db;
 unsigned long global_key_counter;
+
+
+bool is_valid_key(unsigned long key){
+	if( key < 1 || (floor(key) != key))
+		return false;
+	return true;
+}
 
 
 vector<unsigned long> list(){
@@ -22,20 +30,19 @@ vector<unsigned long> list(){
 }
 
 
-Value get(unsigned long key){
-	Value value = {db[key].size, db[key].data};
-	return value;
+bool peek(unsigned long key){
+	map<unsigned long,Value>::iterator it;
+	it = db.find(key);
+  if (it != db.end())
+    return true;
+  return false;
 }
 
-// Función que retorna 1 si la clave ya existe y 0 si no.
-int is_an_existing_key(unsigned long new_key, KVStore db){
-	for(map<unsigned long, Value>::iterator it = db.begin(); it != db.end(); ++it) {
-		if(it->first == new_key){
-			return 1;
-		}
-	}
-	return 0;
+
+Value get(unsigned long key){
+	return db[key];
 }
+
 
 // Función que retorna una clave aleatorea entera entre 10.000 y 1000.
 unsigned long random_key(){
@@ -54,7 +61,7 @@ void init_db(){
 // existiese la clave, en tal caso no la inserta y retorna -1, en caso contrario
 // la inserta exitosamente el dato en la clave indicada y retorna la clave.
 int insert_into_db(unsigned long key, string data){
-	if (is_an_existing_key(key, db)){
+	if (peek(key) || !is_valid_key(key)){
 		return -1;
 	}
 	vector<byte> vdata(data.begin(),data.end());
