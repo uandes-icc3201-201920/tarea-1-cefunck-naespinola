@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
 		{
 			/* Procesar el flag s si el usuario lo ingresa */
 			case 's':
-				socket_path = optarg;	
+				socket_path = optarg;
 				break;
 			default:
 				return EXIT_FAILURE;
@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
 
 
 	//Intento de read
-	/*
+
 	while (1) {
 	    while ( (rc=read(cl,buf,sizeof(buf))) > 0) {
 	    	printf("read %u bytes: %.*s\n", rc, rc, buf);
@@ -185,7 +185,7 @@ int main(int argc, char** argv) {
 	    	close(cl);
 	    }
 	}
-	*/
+	
 	init_db();
 
 	cout << socket_path << endl;
