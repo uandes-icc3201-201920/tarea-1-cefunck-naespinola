@@ -23,7 +23,7 @@ int server_socket_file_descriptor(int listen_len_queue, char* socket_path){
 	//Se crea un socket de tipo SCK_STREAM y protocolo 0
 	if ( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 		perror("socket error");
-		exit(-1);
+		return -1;
   	}
 
 	memset(&addr, 0, sizeof(addr));
@@ -34,13 +34,13 @@ int server_socket_file_descriptor(int listen_len_queue, char* socket_path){
     //Establecer vinculacion con la dirección local del socket
 	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
 		perror("bind error");
-		exit(-1);
+		return -1;
 	}
 
 	//Escuchar conexion de cliente
 	if (listen(fd, listen_len_queue) == -1) { //permite una cola de "listen_len_queue" conexiones
 		perror("listen error");
-		exit(-1);
+		return -1;
 	}
 	cout << "socket listening..." << endl;
 	return fd;
@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
 	char buf[100];
   	int fd,cl,rc;
 
-	char *socket_path = "/tmp/db.tuples.sock"; //saque el punto que estaba al final
+	char *socket_path = "/tmp/db.tuples.sock";
 
 	int opt;
 
@@ -183,7 +183,7 @@ int main(int argc, char** argv) {
 	while (1) {
 
 		while(!lectura){
-			cout << "Entre al modo escritura en server" << endl;
+			cout << "Modo escritura server" << endl;
 			while( (rc=read(STDIN_FILENO, buf, sizeof(buf))) > 0) {
 				if (write(cl, buf, rc) != rc) {
 					if (rc > 0) fprintf(stderr,"partial write");
@@ -193,20 +193,20 @@ int main(int argc, char** argv) {
 		      		}
 		    	}
 		    	if(*buf=='0'){
-				lectura = true;
-				break;
+					lectura = true;
+					break;
 				}
 		  	}	
 		}
 
 		while(lectura){
-			cout << "Entre al modo lectura en server" << endl;
+			cout << "Modo lectura server" << endl;
 			if ( (rc=read(cl,buf,sizeof(buf))) > 0) {
 				printf("read %u bytes: %.*s\n", rc, rc, buf);
 			}
 			if (rc == -1) {
 				perror("read");
-			exit(-1);
+				exit(-1);
 			}
 			else if (rc == 0) {
 				printf("EOF\n");

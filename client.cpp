@@ -14,7 +14,7 @@ int client_socket_file_descriptor(char *socket_path){
 
 	if ( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 		perror("socket error");
-		exit(-1);
+		return -1;
 	}
 
 	memset(&addr, 0, sizeof(addr));
@@ -23,13 +23,13 @@ int client_socket_file_descriptor(char *socket_path){
 
 	if (connect(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
 	  	perror("connect error");
-	  	exit(-1);
+	  	return -1;
 	}
 	return fd;
 }
 
 int main(int argc, char** argv) {
-	char *socket_path = "/tmp/db.tuples.sock"; //saque el punto que estaba al final
+	char *socket_path = "/tmp/db.tuples.sock";
 	struct sockaddr_un addr;
 	char buf[100];
 	int fd,rc, opt;
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 	while(1){
 
 		while(!lectura){
-			cout << "Entre al modo escritura en client" << endl;
+			cout << "Modo escritura client" << endl;
 			while( (rc=read(STDIN_FILENO, buf, sizeof(buf))) > 0) {
 				if (write(fd, buf, rc) != rc) {
 					if (rc > 0) fprintf(stderr,"partial write");
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 		}
 
 		while(lectura){
-			cout << "Entre al modo lectura en client" << endl;
+			cout << "Modo lectura client" << endl;
 			if ( (rc=read(fd,buf,sizeof(buf))) > 0) {
 				printf("read %u bytes: %.*s\n", rc, rc, buf);
 			}
