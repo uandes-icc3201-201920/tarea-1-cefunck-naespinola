@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 		while(lectura){
 			cout << "Entre al modo lectura en server" << endl;
 			if ( (rc=read(cl,buf,sizeof(buf))) > 0) {
-				printf("read %u bytes: %.*s\n", rc, 100, buf);
+				printf("read %u bytes: %.*s\n", rc, rc, buf);
 			}
 			if (rc == -1) {
 				perror("read");
