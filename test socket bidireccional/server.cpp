@@ -79,26 +79,40 @@ int main(int argc, char** argv) {
 
 	while (1) {
 
-			if(!lectura){
-				std::cin >> *buf;
-				write(cl, buf, 100);
+		while(!lectura){
+			cout << "Entre al modo escritura en server" << endl;
+			while( (rc=read(STDIN_FILENO, buf, sizeof(buf))) > 0) {
+				if (write(cl, buf, rc) != rc) {
+					if (rc > 0) fprintf(stderr,"partial write");
+					else {
+						perror("write error");
+						exit(-1);
+		      		}
+		    	}
+		    	if(*buf=='0'){
 				lectura = true;
-			}
+				break;
+				}
+		  	}	
+		}
 
-			if(lectura){
-				if ( (rc=read(cl,buf,sizeof(buf))) > 0) {
-					printf("read %u bytes: %.*s\n", rc, 100, buf);
-				}
-				if (rc == -1) {
-					perror("read");
-				exit(-1);
-				}
-				else if (rc == 0) {
-					printf("EOF\n");
-					close(cl);
-				}
+		while(lectura){
+			cout << "Entre al modo lectura en server" << endl;
+			if ( (rc=read(cl,buf,sizeof(buf))) > 0) {
+				printf("read %u bytes: %.*s\n", rc, 100, buf);
+			}
+			if (rc == -1) {
+				perror("read");
+			exit(-1);
+			}
+			else if (rc == 0) {
+				printf("EOF\n");
+				close(cl);
+			}
+			if(*buf=='0'){
 				lectura = false;
 			}
+		}
 
 	}
 

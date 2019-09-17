@@ -44,7 +44,25 @@ int main(int argc, char** argv) {
 	bool lectura = true;
 	while(1){
 
-		if(lectura){
+		while(!lectura){
+			cout << "Entre al modo escritura en client" << endl;
+			while( (rc=read(STDIN_FILENO, buf, sizeof(buf))) > 0) {
+				if (write(fd, buf, rc) != rc) {
+					if (rc > 0) fprintf(stderr,"partial write");
+					else {
+						perror("write error");
+						exit(-1);
+		      		}
+		    	}
+		    	if(*buf=='0'){
+				lectura = true;
+				break;
+				}
+			}
+		}
+
+		while(lectura){
+			cout << "Entre al modo lectura en client" << endl;
 			if ( (rc=read(fd,buf,sizeof(buf))) > 0) {
 				printf("read %u bytes: %.*s\n", rc, 100, buf);
 			}
@@ -56,13 +74,9 @@ int main(int argc, char** argv) {
 				printf("EOF\n");
 				close(fd);
 			}
-			lectura = false;
-		}
-
-		if(!lectura){
-			std::cin >> *buf;
-			write(fd, buf, 100);
-			lectura = true;
+			if(*buf=='0'){
+				lectura = false;
+			}
 		}
 	}
 
