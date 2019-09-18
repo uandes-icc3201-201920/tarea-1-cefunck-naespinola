@@ -7,6 +7,12 @@
 #include "util.h"
 
 using namespace std;
+struct ConnectionData {
+	bool time_out, successful_connection;
+	char * socket_path;
+};
+
+
 
 int client_socket_file_descriptor(char *socket_path){
 	int fd;
@@ -28,6 +34,54 @@ int client_socket_file_descriptor(char *socket_path){
 	return fd;
 }
 
+void * socket_connect(void * flags){
+	int fd = -1;
+	struct ConnectionData *f = (struct ConnectionData *)flags;
+	while(!(f->time_out) && !(f->successful_connection)){
+		fd = client_socket_file_descriptor(f->socket_path);
+		if(fd != -1){
+			f->successful_connection = true;
+			std::cout << "conexión exitosa" << '\n';
+		}
+		sleep(1);
+	}
+	return (void *)fd;
+}
+
+void * timer( void * flags){
+	struct ConnectionData *f = (struct ConnectionData *)flags;
+	int seconds = 0;
+	while ((seconds < 10) && !(f->successful_connection)) {
+		seconds++;
+		sleep(1);
+	}
+	f-> time_out = true;
+	return NULL;
+}
+
+int connection_attempt(char *socket_path){
+	void * result;
+	int fd = -1;
+	struct ConnectionData *flags;
+	flags = (struct ConnectionData *)malloc(sizeof(struct ConnectionData));
+	flags->time_out = false;
+	flags->successful_connection = false;
+	flags->socket_path = socket_path;
+	printf("%s\n", socket_path);
+	pthread_t timer_thread;
+	pthread_t connector_thread;
+	pthread_create(&timer_thread, NULL, timer, (void *)flags);
+	pthread_create(&connector_thread, NULL, socket_connect, (void *)flags);
+	pthread_join(connector_thread, &result);
+	fd = *((int*)(&result));
+	free(flags);
+	if(fd == -1){
+		std::cout << "error: el tiempo máximo para conectar al servidor expiró" << '\n';
+	}
+	return fd;
+}
+
+
 int main(int argc, char** argv) {
 	char *socket_path = "/tmp/db.tuples.sock";
 	struct sockaddr_un addr;
@@ -40,36 +94,38 @@ int main(int argc, char** argv) {
 		{
 			/* Procesar el flag s si el usuario lo ingresa */
 			case 's':
-				socket_path = optarg;	
+				socket_path = optarg;
 				break;
 			default:
 				return EXIT_FAILURE;
           }
     }
 
-  	fd = client_socket_file_descriptor(socket_path);
-	
-	bool lectura = true;
-	while(1){
+		fd = connection_attempt(socket_path);
+		bool read_mode = true;
+		while(1){
 
-		while(!lectura){
+		while(!read_mode){
+
 			cout << "Modo escritura client" << endl;
 			while( (rc=read(STDIN_FILENO, buf, sizeof(buf))) > 0) {
 				if (write(fd, buf, rc) != rc) {
-					if (rc > 0) fprintf(stderr,"partial write");
-					else {
+					if (rc > 0){
+						fprintf(stderr,"partial write");
+					}else {
 						perror("write error");
 						exit(-1);
 		      		}
 		    	}
-		    	if(*buf=='0'){
-				lectura = true;
-				break;
+
+		    if(*buf=='0'){
+					read_mode = true;
+					break;
 				}
 			}
 		}
 
-		while(lectura){
+		while(read_mode){
 			cout << "Modo lectura client" << endl;
 			if ( (rc=read(fd,buf,sizeof(buf))) > 0) {
 				printf("read %u bytes: %.*s\n", rc, rc, buf);
@@ -83,10 +139,10 @@ int main(int argc, char** argv) {
 				close(fd);
 			}
 			if(*buf=='0'){
-				lectura = false;
+				read_mode = false;
 			}
 		}
 	}
 
-	return 0;	
+	return 0;
 }
