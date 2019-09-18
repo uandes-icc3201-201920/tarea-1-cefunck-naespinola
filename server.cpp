@@ -16,6 +16,36 @@
 
 using namespace std;
 
+int server_socket_file_descriptor(int listen_len_queue, char* socket_path){
+	struct sockaddr_un addr;
+	int fd;
+
+	//Se crea un socket de tipo SCK_STREAM y protocolo 0
+	if ( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+		perror("socket error");
+		return -1;
+  	}
+
+	memset(&addr, 0, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+		strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path)-1);
+	unlink(socket_path);
+
+    //Establecer vinculacion con la dirección local del socket
+	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
+		perror("bind error");
+		return -1;
+	}
+
+	//Escuchar conexion de cliente
+	if (listen(fd, listen_len_queue) == -1) { //permite una cola de "listen_len_queue" conexiones
+		perror("listen error");
+		return -1;
+	}
+	cout << "socket listening..." << endl;
+	return fd;
+}
+
 // Almacenamiento KV
 KVStore db;
 unsigned long global_key_counter;
@@ -119,12 +149,10 @@ int insert_into_db(Value value){
 
 int main(int argc, char** argv) {
 
-	struct sockaddr_un addr;
-  	char buf[100];
-  	int fd,cl,rc; //cl es client cocket, fd es server socket
-  	//int bind, listen, server_socket, accept, read; //posibles variables para sacar lo que esta dentro de los if
+	char buf[100];
+  	int fd,cl,rc;
 
-	char *socket_path = "/tmp/db.tuples.sock"; //saque el punto que estaba al final
+	char *socket_path = "/tmp/db.tuples.sock";
 
 	int opt;
 
@@ -140,31 +168,9 @@ int main(int argc, char** argv) {
 				return EXIT_FAILURE;
           }
     }
+    fd = server_socket_file_descriptor(5, socket_path);
 
-    //Se crea un socket de tipo SCK_STREAM y protocolo 0
-    if ( (fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-	    perror("socket error");
-	    exit(-1);
-  	}
-
-  	memset(&addr, 0, sizeof(addr));
-  	addr.sun_family = AF_UNIX;
-	strncpy(addr.sun_path, socket_path, sizeof(addr.sun_path)-1);
-    unlink(socket_path);
-
-    //Establecer vinculacion con la dirección local del socket
-	if (bind(fd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-	    perror("bind error");
-	    exit(-1);
-	}
-
-	//Escuchar conexion de cliente
-	if (listen(fd, 5) == -1) { //permite una cola de 5 conexiones
-	    perror("listen error");
-	    exit(-1);
-	}
-	cout << "socket listening..." << endl;
-
+    
 	if ( (cl = accept(fd, NULL, NULL)) == -1) {
 	perror("accept error");
 	}
@@ -172,20 +178,46 @@ int main(int argc, char** argv) {
 
 	//Intento de read
 
+	bool lectura = false;
+
 	while (1) {
-	    while ( (rc=read(cl,buf,sizeof(buf))) > 0) {
-	    	printf("read %u bytes: %.*s\n", rc, rc, buf);
-	    }
-	    if (rc == -1) {
-	    	perror("read");
-			exit(-1);
-	    }
-	    else if (rc == 0) {
-	    	printf("EOF\n");
-	    	close(cl);
-	    }
+
+		while(!lectura){
+			cout << "Modo escritura server" << endl;
+			while( (rc=read(STDIN_FILENO, buf, sizeof(buf))) > 0) {
+				if (write(cl, buf, rc) != rc) {
+					if (rc > 0) fprintf(stderr,"partial write");
+					else {
+						perror("write error");
+						exit(-1);
+		      		}
+		    	}
+		    	if(*buf=='0'){
+					lectura = true;
+					break;
+				}
+		  	}	
+		}
+
+		while(lectura){
+			cout << "Modo lectura server" << endl;
+			if ( (rc=read(cl,buf,sizeof(buf))) > 0) {
+				printf("read %u bytes: %.*s\n", rc, rc, buf);
+			}
+			if (rc == -1) {
+				perror("read");
+				exit(-1);
+			}
+			else if (rc == 0) {
+				printf("EOF\n");
+				close(cl);
+			}
+			if(*buf=='0'){
+				lectura = false;
+			}
+		}
 	}
-	
+
 	init_db();
 
 	cout << socket_path << endl;
