@@ -41,7 +41,7 @@ void * socket_connect(void * flags){
 		fd = client_socket_file_descriptor(f->socket_path);
 		if(fd != -1){
 			f->successful_connection = true;
-			std::cout << "conexión exitosa" << '\n';
+			cout << "conexión exitosa" << endl;
 		}
 		sleep(1);
 	}
@@ -76,7 +76,7 @@ int connection_attempt(char *socket_path){
 	fd = *((int*)(&result));
 	free(flags);
 	if(fd == -1){
-		std::cout << "error: el tiempo máximo para conectar al servidor expiró" << '\n';
+		cout << "error: el tiempo máximo para conectar al servidor expiró" << endl;
 	}
 	return fd;
 }
