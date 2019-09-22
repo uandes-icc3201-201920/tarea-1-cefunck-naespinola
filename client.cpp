@@ -6,6 +6,11 @@
 #include <sys/un.h>
 #include "util.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <vector>
+
 using namespace std;
 struct ConnectionData {
 	bool time_out, successful_connection;
@@ -81,16 +86,12 @@ int connection_attempt(char *socket_path){
 	return fd;
 }
 
-
-int main(int argc, char** argv) {
-	char *socket_path = "/tmp/db.tuples.sock";
-	struct sockaddr_un addr;
-	char buf[100];
-	int fd,rc, opt;
-
+//define el socket path si el usuario coloca el flag -s direccion, sino se coloca por defecto
+char * define_socket_path(int argc, char** argv,char *socket_path){
+	socket_path = "/tmp/db.tuples.sock";
 	// Procesar opciones de linea de comando
-    while ((opt = getopt (argc, argv, "s:")) != -1) {
-        switch (opt)
+	while ((opt = getopt (argc, argv, "s:")) != -1) {
+		switch (opt)
 		{
 			/* Procesar el flag s si el usuario lo ingresa */
 			case 's':
@@ -98,12 +99,64 @@ int main(int argc, char** argv) {
 				break;
 			default:
 				return EXIT_FAILURE;
-          }
-    }
+		}
+	}
+	return socket_path;
+}
 
-		fd = connection_attempt(socket_path);
-		bool read_mode = true;
-		while(1){
+int contarPalabras(char* palabras)
+{
+	int contador =0;
+	vector<char*> v;
+	char * token;
+	token = strtok(palabras, " ");
+	while(token!=NULL){
+		v.push_back(token);
+		token = strtok(NULL, " ");
+	}
+	contador=v.size();
+	return contador;
+}
+
+//Para cuando el usuario quiera volve a conectar a un socket
+int new_socket_connect(char* input, char *socket_path){
+	int fd;
+	int n = contarPalabras(input);
+	switch(n){
+		case 1:
+		socket_path = "/tmp/db.tuples.sock";
+		break;
+		case 2:
+		socket_path = input[1];				//no hay control de error si no ingresa bien una direccion de socket
+		break;
+		default:
+		cout <<"ERROR comando invalido"<< endl;
+	}
+	fd = connection_attempt(socket_path);
+	return fd;
+}
+
+int disconnect(int fd){
+	close(fd);
+}
+void quit(int fd){
+	if (fd!=NULL){
+		disconnect(fd);
+	}
+	exit(-1);
+}
+
+int main(int argc, char** argv) {
+	char *socket_path
+	struct sockaddr_un addr;
+	char buf[100];
+	int fd,rc, opt;
+
+	socket_path = define_socket_path(argc, argv);
+
+	fd = connection_attempt(socket_path);
+	bool read_mode = true;
+	while(1){
 
 		while(!read_mode){
 
