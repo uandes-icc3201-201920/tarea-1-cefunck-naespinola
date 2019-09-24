@@ -113,6 +113,16 @@ bool validate_statement(vector<string> splitted_statement){
 	}
 	command = to_lower(splitted_statement[0]);
 	if(splitted_statement.size() > 1){
+		if(splitted_statement.size() == 2){
+			if(splitted_statement[1].back() != ')') {return false;}
+			else{
+				cout<<splitted_statement[1].length()<<" algo"<<endl;
+			key = splitted_statement[1].substr(0,splitted_statement[1].length()-1);
+			}
+		}
+		if(splitted_statement.size() == 3){
+			if(splitted_statement[2].back() != ')') {return false;}
+		}
 		key = splitted_statement[1];
 	}
 	switch (splitted_statement.size()) {
@@ -164,13 +174,13 @@ vector<string> split_statement(string statement){
 			return result;
 		}
 		vector<string> temp = split_by_delimiter(result[1],",");
-		result[1] = temp[0].substr(0,temp[0].size()-1);
+		result[1] = temp[0].substr(0,temp[0].size());
 		if(temp.size() == 1){
 			return result;
 		}
 		result[1] = temp[0].substr(0,temp[0].size());
 		if(temp.size() == 2){
-			result.push_back(temp[1].substr(0,temp[1].size()-1));
+			result.push_back(temp[1].substr(0,temp[1].size()));
 			return result;
 		}
 		return empty_result;
@@ -231,9 +241,9 @@ string exec_statement(string user_input){
 			case 1:
 				return ("0 " + command_code(splitted_input[0]));
 			case 2:
-				return ("0 " + command_code(splitted_input[0]) + " " +  splitted_input[1]);
+				return ("0 " + command_code(splitted_input[0]) + " " +  splitted_input[1].substr(0,splitted_input[1].length()-1));
 			case 3:
-				return ("0 " + command_code(splitted_input[0]) + " " +  splitted_input[1] + " " +  splitted_input[2]);
+				return ("0 " + command_code(splitted_input[0]) + " " +  splitted_input[1] + " " +  splitted_input[2].substr(0,splitted_input[2].length()-1));
 		}
 	}
 	return "Sentencia Invalida";
@@ -279,7 +289,7 @@ int main(int argc, char** argv) {
 				string client_output1 = exec_statement(user_input1);
 				int pos = client_output1.find("1");
 				string new_path = client_output1.substr(pos);
-				std::cout << "path:"<< new_path << '\n';
+				cout << "path:"<< new_path << '\n';
 				if(client_output1 == "0 1"){
 					fd = new_socket_connect("");
 					std::cout << "fd:"<<fd << '\n';
