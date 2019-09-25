@@ -3,10 +3,11 @@
 * Cristian Funck
 * Natalia Espinola
 
-## No se pudieron implementar:
+## Dificultades encontradas:
 
 
-## Dificultades:
+## Funciones no implementadas:
 
 
-## Bugs:
+## Problemas conocidos:
+
