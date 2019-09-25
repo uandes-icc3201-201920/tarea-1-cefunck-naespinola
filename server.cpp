@@ -199,7 +199,9 @@ string exec_statement(string statement){
 				//std::cout << "value:"<<splitted_statement[3] << '\n';
 				key = stoi(splitted_statement[2]);
 				value = string_to_value(splitted_statement[3]);
-				integer_result = insert_key_value_into_db(key,value);
+				int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);
+				integer_result = insert_key_value_into_db(key,value); //seccion critica
+				int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
 				if(integer_result != -1){
 					response = response + to_string(integer_result);
 				}else{
