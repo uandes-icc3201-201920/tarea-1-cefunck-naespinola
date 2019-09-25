@@ -9,9 +9,6 @@
 #include <pthread.h>
 #include <errno.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <unistd.h>
 
 
 using namespace std;
@@ -143,10 +140,13 @@ int insert_key_value_into_db(unsigned long key, Value value){
 
 
 int insert_value_into_db(Value value){
+	pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 	unsigned long new_key = global_key_counter;
 	int result = insert_key_value_into_db(new_key, value);
 	if (result == new_key){
-		global_key_counter++;
+		pthread_mutex_lock(&lock);
+		global_key_counter++; //seccion critica
+		pthread_mutex_unlock(&lock);
 	}
 	return result;
 }

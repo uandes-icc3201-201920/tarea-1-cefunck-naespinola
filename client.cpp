@@ -116,7 +116,6 @@ bool validate_statement(vector<string> splitted_statement){
 		if(splitted_statement.size() == 2){
 			if(splitted_statement[1].back() != ')') {return false;}
 			else{
-				cout<<splitted_statement[1].length()<<" algo"<<endl;
 			key = splitted_statement[1].substr(0,splitted_statement[1].length()-1);
 			}
 		}
@@ -314,8 +313,10 @@ int main(int argc, char** argv) {
 				string user_input = temp.substr(0,rc-1);
 				string client_output = exec_statement(user_input);
 				if(client_output == "0 2"){
+					cout <<" el usuario pidio desconctarse"<< endl;
 					disconnect(fd);
 				}else if(client_output == "0 3"){
+					cout <<" el usuario pidio salir"<< endl;
 					quit(fd);
 				}
 				if(client_output == "Sentencia Invalida"){
